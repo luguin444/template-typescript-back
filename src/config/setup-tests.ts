@@ -1,4 +1,4 @@
-import 'app/config/env';
+import './env';
 // import { client } from 'infra/db/postgres/prisma/config/client';
 
 // async function cleanPrismaDB() {

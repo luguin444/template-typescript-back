@@ -8,5 +8,5 @@ if (process.env.NODE_ENV === 'test') {
   config({ path: resolve(__dirname, '../../.env.test') });
 }
 if (process.env.NODE_ENV === 'production') {
-  config({ path: resolve(__dirname, '../../.env') });
+  config({ path: resolve(__dirname, '../../.env.production') });
 }

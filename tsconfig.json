@@ -5,17 +5,10 @@
     "target": "es2019",
     "esModuleInterop": true,
     "allowJs": true,
-    "rootDir": "./",
-    "baseUrl": "./src",
+    "baseUrl": "src",
     "paths": {
-      "@modules/*": ["modules/*"],
-      "@config/*": ["config/*"],
+      "*": ["*"]
     },
-    "resolveJsonModule": true,
-
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
+    "plugins": [{ "transform": "typescript-transform-paths", "exclude": [ "**/node_modules/**" ] }]
   }
 }

@@ -1,10 +1,11 @@
 import 'express-async-errors';
-import HttpStatus from 'http-status';
-import cors from 'cors';
+import './config/env';
 import express, { Express, Request, Response, NextFunction } from 'express';
-import '@config/env';
+import cors from 'cors';
+import httpStatus from 'http-status';
+import { ResponseErrorFormatter } from 'utils/response-error-formatter';
 
-export async function init(): Promise<Express> {
+export function init(): Express {
   const app = express();
 
   setGlobalMiddlewares(app);
@@ -16,17 +17,20 @@ export async function init(): Promise<Express> {
 function setGlobalMiddlewares(app) {
   app.use(cors());
   app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
 }
 
 function setRoutes(app: Express) {
   app.use('/health', (_req, res) => {
-    res.sendStatus(HttpStatus.OK);
+    res.sendStatus(httpStatus.OK);
   });
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   app.use((error: Error, req: Request, res: Response, _next: NextFunction) => {
+    const status = httpStatus.INTERNAL_SERVER_ERROR;
+
     if (process.env.NODE_ENV === 'development') console.error(error);
 
-    res.sendStatus(500);
+    res.status(status).json(ResponseErrorFormatter.format(error));
   });
 }

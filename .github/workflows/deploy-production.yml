@@ -1,0 +1,57 @@
+on:
+  push:
+    branches:
+      - production
+
+name: Build and Deploy to Cloud Run
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT }}
+  SA_KEY: ${{ secrets.GCP_SA_KEY }}
+  SERVICE: SERVICE_NAME # TODO: 
+  REGION: us-central1
+  GCP_SQL_INSTANCE: ${{ secrets.GCP_SQL_INSTANCE_POSTGRES_HOST }}
+  MIGRATION_JOB_NAME: service-name-run-migrations # TODO: 
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        node-version: [16.x] # oq está usando no Dockerfile
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.2.0
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          service_account_key: ${{ env.SA_KEY }}
+
+      - name: Authorize Docker push images to GCP
+        run: gcloud auth configure-docker
+
+      - name: 'Create env file'
+        run: |
+          touch .env.production
+          echo SECRET_TESTE=${{ secrets.TESTE }} >> .env.production
+          echo BASE_DOMAIN=https://wwww.respondeai.com.br >> .env.production
+
+      - name: Build and Push image to GCP
+        run: |-
+          docker build -t gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:latest -f Dockerfile.cloudrun .
+          docker push gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:latest
+
+      - name: Run migrations by CloudRun jobs
+        run: |-
+          gcloud components install beta'
+          gcloud beta run jobs execute ${{env.MIGRATION_JOB_NAME}} --region=us-central1 --wait --quiet
+
+      - name: Deploy image pushed to Cloud Run
+        run: |-
+          gcloud run deploy ${{ env.SERVICE }} \
+            --region ${{ env.REGION }} \
+            --image gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:latest \
+            --platform "managed" \
+            --quiet
