@@ -1,12 +1,8 @@
 import './env';
-// import { client } from 'infra/db/postgres/prisma/config/client';
+import { prisma } from 'config/prisma-client';
 
 // async function cleanPrismaDB() {
-//   await client.logRequest.deleteMany({ where: {} });
+//   await prisma.logRequest.deleteMany({ where: {} });
 // }
 
-// async function cleanDatabases() {
-//   await cleanPrismaDB();
-// }
-
-// beforeEach(cleanDatabases);
+// beforeEach(cleanPrismaDB);
