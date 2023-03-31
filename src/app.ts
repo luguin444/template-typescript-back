@@ -4,6 +4,7 @@ import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import httpStatus from 'http-status';
 import { ResponseErrorFormatter } from 'utils/response-error-formatter';
+import HttpError from 'errors/http-error';
 
 export function init(): Express {
   const app = express();
@@ -26,11 +27,13 @@ function setRoutes(app: Express) {
   });
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  app.use((error: Error, req: Request, res: Response, _next: NextFunction) => {
-    const status = httpStatus.INTERNAL_SERVER_ERROR;
+  app.use(
+    (error: HttpError, req: Request, res: Response, _next: NextFunction) => {
+      const status = error.status || httpStatus.INTERNAL_SERVER_ERROR;
 
-    if (process.env.NODE_ENV === 'development') console.error(error);
+      if (process.env.NODE_ENV !== 'production') console.error(error);
 
-    res.status(status).json(ResponseErrorFormatter.format(error));
-  });
+      res.status(status).json(ResponseErrorFormatter.format(error));
+    }
+  );
 }
